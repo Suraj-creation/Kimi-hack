@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
+import WorkApplicationWizard from '@/components/work/WorkApplicationWizard';
 import { 
   ArrowLeft, 
   MapPin, 
@@ -153,6 +154,8 @@ export default function WorkList() {
   const [workTypeFilter, setWorkTypeFilter] = useState('all');
   const [distanceFilter, setDistanceFilter] = useState('all');
   const [showFilters, setShowFilters] = useState(false);
+  const [selectedWork, setSelectedWork] = useState<any>(null);
+  const [showWizard, setShowWizard] = useState(false);
 
   // Apply filters
   useEffect(() => {
@@ -170,8 +173,27 @@ export default function WorkList() {
     setFilteredWorks(filtered);
   }, [works, workTypeFilter, distanceFilter]);
 
-  const handleApply = (workId: string) => {
-    toast.success('आवेदन सफल! आपकी प्राथमिकता स्कोर के आधार पर आवंटन होगा।');
+  const handleApply = (work: any) => {
+    // Convert work data to wizard format
+    setSelectedWork({
+      id: work._id,
+      title: work.workTitle.hi,
+      location: work.location.village,
+      distance: work.distance,
+      startDate: new Date(work.workDetails.startDate).toLocaleDateString('hi-IN', {day: 'numeric', month: 'long'}),
+      endDate: new Date(new Date(work.workDetails.startDate).setDate(new Date(work.workDetails.startDate).getDate() + work.workDetails.estimatedDays)).toLocaleDateString('hi-IN', {day: 'numeric', month: 'long'}),
+      wagePerDay: work.workDetails.wageRatePerDay,
+      maxWorkers: work.workDetails.totalSlotsAvailable,
+      availableSlots: work.workDetails.slotsRemaining,
+      category: work.workTitle.hi,
+      description: work.description.hi,
+    });
+    setShowWizard(true);
+  };
+
+  const handleApplicationSuccess = (applicationNumber: string) => {
+    toast.success(`आवेदन सफल! नंबर: ${applicationNumber}`);
+    setShowWizard(false);
   };
 
   const getFacilityIcon = (facility: string) => {
@@ -333,7 +355,7 @@ export default function WorkList() {
 
               {/* Apply Button */}
               <Button
-                onClick={() => handleApply(work._id)}
+                onClick={() => handleApply(work)}
                 className="w-full bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700"
               >
                 आवेदन करें
@@ -354,6 +376,15 @@ export default function WorkList() {
           </div>
         )}
       </main>
+
+      {/* Application Wizard Modal */}
+      {showWizard && selectedWork && (
+        <WorkApplicationWizard
+          work={selectedWork}
+          onClose={() => setShowWizard(false)}
+          onSuccess={handleApplicationSuccess}
+        />
+      )}
     </div>
   );
 }

@@ -22,15 +22,15 @@ export interface PriorityInput {
   attendanceHistory?: Attendance[];
 }
 
-// Default weights for priority calculation
+// Default weights for priority calculation (from unified_solution.md)
 const DEFAULT_WEIGHTS = {
-  vulnerability: 0.30,
-  unemployment: 0.20,
-  poverty: 0.15,
-  social_category: 0.10,
-  gender: 0.10,
-  disability: 0.10,
-  rotation: 0.05,
+  vulnerability: 0.30,    // Highest weight - critical life situations
+  unemployment: 0.20,     // Days without work
+  poverty: 0.15,          // Economic status
+  social_category: 0.10,  // SC/ST/OBC
+  gender: 0.10,           // Women priority
+  disability: 0.10,       // Disability status
+  rotation: 0.05,         // Fair distribution
 };
 
 // Calculate vulnerability score based on multiple factors
@@ -59,6 +59,12 @@ function calculateVulnerabilityScore(user: User): number {
   // Mental health
   if (user.healthInfo?.mentalWellbeingScore && user.healthInfo.mentalWellbeingScore < 0.5) {
     score += 0.05;
+  }
+  
+  // Debt burden - NEW from unified solution
+  if (user.economicInfo?.hasDebt) {
+    const debtRatio = (user.economicInfo?.debtAmount || 0) / (user.economicInfo?.annualIncome || 1);
+    if (debtRatio > 0.5) score += 0.08; // High debt burden
   }
   
   return Math.min(score, 1.0);

@@ -18,7 +18,8 @@ import {
   ChevronRight,
   CheckCircle,
   Clock,
-  MapPin
+  MapPin,
+  Sparkles
 } from 'lucide-react';
 
 export default function MGNREGAHome() {
@@ -32,6 +33,14 @@ export default function MGNREGAHome() {
   const progressPercentage = (daysWorked / 100) * 100;
 
   const menuItems = [
+    {
+      icon: Sparkles,
+      title: 'Living Shelf of Works',
+      description: 'AI-संचालित योजना प्रणाली',
+      path: '/mgnrega/living-shelf',
+      color: 'bg-gradient-to-r from-purple-100 to-pink-100 text-purple-600',
+      badge: 'NEW',
+    },
     {
       icon: Briefcase,
       title: 'उपलब्ध काम',

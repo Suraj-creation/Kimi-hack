@@ -1,6 +1,6 @@
 // SAHAYOG - Grievance Filing Page
-import React, { useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useRef, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -20,7 +20,8 @@ import {
   Send,
   Clock,
   CheckCircle,
-  Volume2
+  Volume2,
+  Bot
 } from 'lucide-react';
 import { grievanceOperations } from '@/lib/mongodb';
 
@@ -65,6 +66,7 @@ const categories = [
 
 export default function Grievance() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
   
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -73,8 +75,27 @@ export default function Grievance() {
   const [recordingDuration, setRecordingDuration] = useState(0);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [aiPreFilled, setAiPreFilled] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const recordingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Check if AI assistant pre-filled the grievance
+  useEffect(() => {
+    if (location.state) {
+      const { prefilledText, category } = location.state as { prefilledText?: string; category?: string };
+      if (prefilledText) {
+        setDescription(prefilledText);
+        setAiPreFilled(true);
+        toast.success('AI साथी ने शिकायत तैयार कर दी है', {
+          description: 'कृपया जांच लें और सबमिट करें',
+          icon: <Bot className="h-5 w-5" />,
+        });
+      }
+      if (category) {
+        setSelectedCategory(category);
+      }
+    }
+  }, [location.state]);
 
   const startRecording = async () => {
     try {
